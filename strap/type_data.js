@@ -1,7 +1,9 @@
 TypeData = function (typeName) {
     this.typeName = typeName;
+    this.constructorArguments = '';
     this.constructorBody = null;
     this.constructorObject = null;
+    this.compiledConstructorBody = null;
     this.proto = null;
     this.compiledType = null;
     this.baseTypeData = null;
@@ -26,11 +28,12 @@ TypeData.prototype.fn = function(fnName, fnBody) {
 };
 
 
-TypeData.MetaData = {
+TypeDataMetaData = {
     attrNames: [],
     attrValues: [],
     methodNames: [],
     methodBodies: [],
+    constructorArguments: '',
     attr: TypeData.prototype.attr,
     fn: TypeData.prototype.fn
 };
@@ -39,21 +42,14 @@ var t = new TypeData();
 
 for(var key in t) {
     if(t.hasOwnProperty(key)) {
-        TypeData.MetaData.attrNames.push(key);
-        TypeData.MetaData.attrValues.push(t[key]);
+        TypeDataMetaData.attrNames.push(key);
+        TypeDataMetaData.attrValues.push(t[key]);
     }
 }
 
 for(key in TypeData.prototype) {
     if(TypeData.prototype.hasOwnProperty(key)){
-        TypeData.MetaData.methodNames.push(key);
-        TypeData.MetaData.methodBodies.push(TypeData.prototype[key]);
+        TypeDataMetaData.methodNames.push(key);
+        TypeDataMetaData.methodBodies.push(TypeData.prototype[key]);
     }
 }
-//
-//var fn = function() {
-//    console.log(this.attr);
-//};
-//
-//fn.call(TypeData.MetaData);
-//console.log('done');
