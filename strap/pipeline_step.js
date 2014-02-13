@@ -82,12 +82,14 @@ var AttachPrototype = {
     }
 };
 
-TypeCompiler.addPipelineStep(MergeBaseClassAttributes);
+
 TypeCompiler.addPipelineStep(CreateConstructorBody);
 TypeCompiler.addPipelineStep(CreateConstructorObject);
-TypeCompiler.addPipelineStep(CreatePrototype);
 TypeCompiler.addPipelineStep(AppendFunctions);
 TypeCompiler.addPipelineStep(AttachPrototype);
+TypeCompiler.addPipelineStep(MergeBaseClassAttributes);
+TypeCompiler.addPipelineStep(CreatePrototype);
+
 
 TypeCompiler.defineClass(window, 'PipelineStep', null, null, function () {
     this.attr('processFunction');
@@ -110,28 +112,28 @@ TypeCompiler.defineClass(window, 'PipelineStep', null, null, function () {
     });
 });
 
-TypeCompiler.defineExtension('Static', function () {
+//TypeCompiler.defineExtension('Static', function () {
+//
+//    this.attr('statics', {});
+//    this.fn('static', function(prop, val) {
+//        this.statics[prop] = val;
+//    });
+//
+//}, function () {
+//    this.executeAfter('CreateConstructorObject');
+//    this.executeBefore('CreatePrototype');
+//
+//    this.pipelineStep(function (baseTypeData, extendingTypeData) {
+//        var statics = extendingTypeData.statics;
+//        for(var key in statics) {
+//            if(statics.hasOwnProperty(key)){
+//                extendingTypeData.constructorObject[key] = statics[key];
+//            }
+//        }
+//    });
+//});
 
-    this.attr('statics', {});
-    this.fn('static', function(prop, val) {
-        this.statics[prop] = val;
-    });
-
-}, function () {
-    this.executeAfter('CreateConstructorObject');
-    this.executeBefore('CreatePrototype');
-
-    this.pipelineStep(function (baseTypeData, extendingTypeData) {
-        var statics = extendingTypeData.statics;
-        for(var key in statics) {
-            if(statics.hasOwnProperty(key)){
-                extendingTypeData.constructorObject[key] = statics[key];
-            }
-        }
-    });
-});
-
-TypeCompiler.defineClass(window, 'Book', null, null, function() {
-    this.attr('mmk');
-    this.static('somethingStatic', 'FUCKING WORKS!');
-});
+//TypeCompiler.defineClass(window, 'Book', null, null, function() {
+//    this.attr('mmk');
+//    this.static('somethingStatic', 'FUCKING WORKS!');
+//});
