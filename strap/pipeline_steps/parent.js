@@ -6,8 +6,8 @@ TypeCompiler.defineExtension('Parent', null, function () {
             extendingTypeData.methodBodies.push(this.helpers.parentFunction);
         });
 
-        this.fn('parentFunction', function () {
+        this.helper('parentFunction', function () {
             return Object.getPrototypeOf(Object.getPrototypeOf(this));
-        })
+        });
     }
 );
