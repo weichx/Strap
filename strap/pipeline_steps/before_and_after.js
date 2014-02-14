@@ -26,6 +26,13 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         var methodNames = typeData.methodNames;
         var methodBodies = typeData.methodBodies;
 
+        var findMethod = function(methodName) {
+            for(var i = 0, il = methodNames.length; i < il; i++){
+                if(methodNames[i] === methodName) return methodBodies[i];
+            }
+            //todo error message needs to include namespace
+            throw new Error("Unable to find method `" + methodName + "` on type " + typeData.typeName);
+        };
         //attach some properties to the type's constructor object.
         //these will be available when the type is complete as MyType.__befores etc
         typeData.constructorObject.__befores = {};
@@ -41,7 +48,17 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
                 statics.__befores[key] = [];
                 var functionsToCall = typeData.beforeFunctions[key];
                 for (var j = 0, jl = functionsToCall.length; j < jl; j++) {
-                    statics.__befores[key].push(functionsToCall[j]);
+                    var fn = functionsToCall[j];
+
+                    if(!fn || !(typeof fn === 'function' || typeof fn === 'string')) {
+                        //todo error message needs to include namespace
+                        throw new Error("Invalid `before` parameter, you must provide either a " +
+                            "function reference or a string that points to a method on the type " + typeData.typeName);
+                    }
+                    if(typeof fn === 'string') {
+                        fn = findMethod(fn);
+                    }
+                    statics.__befores[key].push(fn);
                 }
             }
         }
@@ -51,7 +68,16 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
                 statics.__afters[key] = [];
                 functionsToCall = typeData.afterFunctions[key];
                 for (j = 0, jl = functionsToCall.length; j < jl; j++) {
-                    statics.__afters[key].push(functionsToCall[j]);
+                    fn = functionsToCall[j];
+                    if(!fn || !(typeof fn !== 'function' || typeof fn !== 'string')) {
+                        //todo error message needs to include namespace
+                        throw new Error("Invalid `before` parameter, you must provide either a " +
+                            "function reference or a string that points to a method on the type " + typeData.typeName);
+                    }
+                    if(typeof fn === 'string') {
+                        fn = findMethod(fn);
+                    }
+                    statics.__afters[key].push(fn);
                 }
             }
         }

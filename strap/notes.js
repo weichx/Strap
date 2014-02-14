@@ -1,6 +1,7 @@
 //Add an option to pre compile the pipeline only
 //todo name all functions so we don't get 'anonymous function' in logs
-
+//todo require all extentions to declare what they do and which TypeData variables they manipulate.
+//todo require all extensions to show which attrs and functions are added to TypeData(can this be inferred?)
 /*
  * Extension Ideas
  *   before / after hooks
@@ -17,7 +18,7 @@
  *   debug mode param validation
  *   computedProperty
  *   mixin
- *   flatten -> bring all sub prototype methods to top level prototype, destroys prototype chain
+ *   flatten -> bring all sub prototype methods to top level prototype, destroys prototype chain (and base TypeData?)
  *   parent
  *   standardMethods -> adds a set of methods to the top level prototype
  *
