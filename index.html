@@ -24,11 +24,10 @@
 <script src="strap/pipeline_steps/mixin.js"></script>
 <script src="strap/pipeline_steps/before_and_after.js"></script>
 
-
-
 <!-- User Pipeline Steps --->
 
 <!-- User Classes --->
+
 <script>
 
 Strap.configure({
@@ -67,6 +66,25 @@ Strap.defineClass('Book', function() {
     this.fn('other', function() {
         console.log('calling other');
     });
+
+    this.after('test', 'other');
+});
+
+Strap.defineClass('GoodBook : Book', function() {
+   this.attr('someAttr');
+});
+
+Strap.defineClass('BetterBook : Book', function() {
+    this.attr('some_other');
+    this.fn('super_before', function(){
+        console.log("SUPER");
+    });
+    this.before('test', function() {
+        console.log('SUPER');
+    });
+    this.after('test', function() {
+        console.log('SUPER');
+    })
 });
 
 //TypeCompiler.defineClass(window, 'GoodBook', window, 'Book', function(){

@@ -26,12 +26,24 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         var methodNames = typeData.methodNames;
         var methodBodies = typeData.methodBodies;
 
-        var findMethod = function(methodName) {
+        var findMethod = function(methodName, typeDataToSearch, depth) {
+            var methodNames = typeDataToSearch.methodNames;
+            var methodBodies = typeDataToSearch.methodBodies;
             for(var i = 0, il = methodNames.length; i < il; i++){
-                if(methodNames[i] === methodName) return methodBodies[i];
+                if(methodNames[i] === methodName) {
+                    if(depth > 0) {
+                        typeData.methodNames.push(methodName);
+                        typeData.methodBodies.push(methodBodies[i]);
+                    }
+                    return methodBodies[i];
+                }
             }
-            //todo error message needs to include namespace
-            throw new Error("Unable to find method `" + methodName + "` on type " + typeData.typeName);
+            if(typeDataToSearch.baseTypeData) {
+                return findMethod(methodName, typeDataToSearch.baseTypeData, ++depth);
+            } else {
+                //todo error message needs to include namespace
+                throw new Error("Unable to find method `" + methodName + "` on type " + typeData.typeName + " or any of its base classes");
+            }
         };
         //attach some properties to the type's constructor object.
         //these will be available when the type is complete as MyType.__befores etc
@@ -47,6 +59,9 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
             if (typeData.beforeFunctions.hasOwnProperty(key)) {
                 statics.__befores[key] = [];
                 var functionsToCall = typeData.beforeFunctions[key];
+                if(typeData.methodNames.indexOf(key) === -1){
+                    findMethod(key, typeData, 0);
+                }
                 for (var j = 0, jl = functionsToCall.length; j < jl; j++) {
                     var fn = functionsToCall[j];
 
@@ -56,7 +71,7 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
                             "function reference or a string that points to a method on the type " + typeData.typeName);
                     }
                     if(typeof fn === 'string') {
-                        fn = findMethod(fn);
+                        fn = findMethod(fn, typeData, 0);
                     }
                     statics.__befores[key].push(fn);
                 }
@@ -66,6 +81,9 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         for (key in typeData.afterFunctions) {
             if (typeData.afterFunctions.hasOwnProperty(key)) {
                 statics.__afters[key] = [];
+                if(typeData.methodNames.indexOf(key) === -1){
+                    findMethod(key, typeData, 0);
+                }
                 functionsToCall = typeData.afterFunctions[key];
                 for (j = 0, jl = functionsToCall.length; j < jl; j++) {
                     fn = functionsToCall[j];
@@ -75,7 +93,7 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
                             "function reference or a string that points to a method on the type " + typeData.typeName);
                     }
                     if(typeof fn === 'string') {
-                        fn = findMethod(fn);
+                        fn = findMethod(fn, typeData, 0);
                     }
                     statics.__afters[key].push(fn);
                 }
@@ -97,7 +115,8 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         //Note that all functions that have a hand in either before or after
         //are relocated to the Type itself rather than remaining on its
         //prototype like other functions. This is so we do not crowd the
-        //prototype with garbage looking values upon inspection.
+        //prototype with garbage-looking values upon inspection and so it plays
+        //nice with other extensions.
         for (var i = 0, il = methodNames.length; i < il; i++) {
             var methodName = methodNames[i];
             var methodBody = methodBodies[i];
@@ -148,9 +167,14 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
                     }
                 }
                 bodyString += 'return retn;';
+
+                //for some reason we occasionally get a weird character sequence
+                //in the seperated argument string, this removes it
+                seperatedArguments = seperatedArguments.replace('\n/**/', '');
+                var functionStr = "Function(" + seperatedArguments + "bodyString)";
+
                 //construct the actual function using eval, this is the only way I know of
                 //to get dynamic arguments into a function.
-                var functionStr = "Function(" + seperatedArguments + "bodyString)";
                 methodBodies[i] = eval(functionStr);
             }
         }

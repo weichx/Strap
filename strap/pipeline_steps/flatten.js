@@ -4,6 +4,7 @@ TypeCompiler.defineExtension('Flatten', function () {
         this.shouldFlatten = true;
     });
 }, function () {
+    this.executeBefore('AppendFunctions');
     this.pipelineStep(function (baseTypeData, extendingTypeData) {
         if(extendingTypeData.shouldFlatten) {
 
