@@ -6,7 +6,7 @@ TypeCompiler = {
 
 TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamespace, baseClassName, buildFunction) {
     //if typeData is dirty, rebuild it?
-    var typeData = new TypeData();
+    var typeData = new TypeData(className);
     typeData.baseTypeData = (
         baseClassNamespace &&
         baseClassNamespace[baseClassName] &&

@@ -13,6 +13,7 @@ TypeCompiler.defineExtension('Static', function () {
         this.executeBefore('CreatePrototype');
 
         this.pipelineStep(function (baseTypeData, extendingTypeData) {
+
             var statics = extendingTypeData.statics;
             for (var key in statics) {
                 if (statics.hasOwnProperty(key)) {

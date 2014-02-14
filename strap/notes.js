@@ -4,6 +4,7 @@
 /*
  * Extension Ideas
  *   before / after hooks
+ *   before / after chain -> acts like a pipeline, each step in the chain receives the previous method's return value
  *   getter / setter
  *   Object.defineProperty w/ getter / setter
  *   eventing

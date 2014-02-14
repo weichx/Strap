@@ -22,7 +22,7 @@
 <script src="strap/pipeline_steps/constructor.js"></script>
 <script src="strap/pipeline_steps/parent.js"></script>
 <script src="strap/pipeline_steps/mixin.js"></script>
-<!--<script src="strap/pipeline_steps/before_and_after.js"></script>-->
+<script src="strap/pipeline_steps/before_and_after.js"></script>
 
 
 
@@ -30,52 +30,46 @@
 
 <!-- User Classes --->
 <script>
+
 Strap.configure({
-    ignoreStrapNamespace: true
+    //ignoreStrapNamespace: true
 });
 
 Strap.defineClass('Book', function() {
+    this.attr('title');
+    this.attr('author');
 
+    this.before('test', function() {
+        console.log('calling before test');
+    });
+
+    this.before('test', function(arg0, arg1) {
+        console.log('calling before test #2', arg0, arg1);
+    });
+
+    this.before('other', function() {
+        console.log('before other');
+    });
+
+    this.after('test', function() {
+        console.log('test was called');
+    });
+
+    this.init(function(title, author){
+        this.title = title;
+        this.author = author;
+    });
+
+   // this.fn('yup', function(){});
+
+    this.fn('test', function(arg0, arg1) {
+        console.log('calling test', arg0, arg1);
+    });
+
+    this.fn('other', function() {
+        console.log('calling other');
+    });
 });
-
-Strap.namespace('Math2');
-
-
-//TypeCompiler.defineClass(window, 'Book', null, null, function() {
-//    this.attr('title');
-//    this.attr('author');
-//
-//    this.before('test', function() {
-//        console.log('calling before test');
-//    });
-//
-//    this.before('test', function() {
-//        console.log('calling before test #2');
-//    });
-//
-//    this.before('other', function() {
-//        console.log('before other');
-//    });
-//
-//    this.after('test', function() {
-//        console.log('test was called');
-//    });
-//
-//    this.init(function(title, author){
-//        this.title = title;
-//        this.author = author;
-//    });
-//
-//   // this.fn('yup', function(){});
-//
-//    this.fn('test', function() {
-//        console.log('calling test');
-//    });
-//
-//    this.fn('other', function() {
-//        console.log('calling other');
-//    });
-//});
 
 //TypeCompiler.defineClass(window, 'GoodBook', window, 'Book', function(){
 //    this.attr('meow');
