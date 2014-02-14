@@ -1,14 +1,21 @@
 TypeCompiler = {
     pipeline: [],
-    pipelineSteps: {}
+    pipelineSteps: {},
+    pipelineNeedsRebuilding: false
 };
 
-TypeCompiler.defineClass = function (namespaceObject, className, baseClassName, baseClassNamespace, buildFunction) {
+TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamespace, baseClassName, buildFunction) {
     //if typeData is dirty, rebuild it?
     var typeData = new TypeData();
-    typeData.baseTypeData = baseClassNamespace && baseClassNamespace[baseClassName];
+    typeData.baseTypeData = (
+        baseClassNamespace &&
+        baseClassNamespace[baseClassName] &&
+        baseClassNamespace[baseClassName].typeData
+    );
+    typeData.fullPath = namespaceObject.getPath() + '.' + className;
     buildFunction.call(typeData);
-    namespaceObject[className] = this.buildClass(typeData);
+    namespaceObject._typeAttachPoint[className] = this.buildClass(typeData);
+    namespaceObject._typeAttachPoint[className].typeData = typeData;
 };
 
 TypeCompiler.buildClass = function (typeData) {
@@ -21,11 +28,11 @@ TypeCompiler.buildClass = function (typeData) {
 
 TypeCompiler.defineExtension = function (extensionName, typeDataFunction, pipelineFunction) {
     if (typeDataFunction && typeof typeDataFunction === 'function') {
-        typeDataFunction.call(TypeData.MetaData);
-        TypeData = this.buildClass(TypeData.MetaData);
+        typeDataFunction.call(TypeDataMetaData);
+        TypeData = this.buildClass(TypeDataMetaData);
     }
     if (pipelineFunction && typeof  pipelineFunction === 'function') {
-        var pipelineData = new PipelineStep();
+        var pipelineData = new __StrapInternals.PipelineStep();
         pipelineData.name = extensionName;
         pipelineFunction.call(pipelineData);
         this.addPipelineStep(pipelineData);
@@ -38,8 +45,13 @@ TypeCompiler.addPipelineStep = function (pipelineStep) {
     }
     this.pipelineSteps[pipelineStep.name] = pipelineStep;
     this.pipeline.push(pipelineStep);
-    this.buildAdjacencyLists();
     this.sortPipeline();
+};
+
+TypeCompiler.showPipelineSteps = function() {
+    for(var i = 0, il = this.pipeline.length; i < il; i++){
+        console.log(this.pipeline[i].name);
+    }
 };
 
 //builds the adjacency list for the topological sort executed in sortPipeline
@@ -82,9 +94,11 @@ TypeCompiler.buildAdjacencyLists = function () {
     }
 };
 
+
 //Performs a topological sort on the build pipeline to ensure steps are executed in the proper
 //order and that no cycles exist in the pipeline
 TypeCompiler.sortPipeline = function () {
+    this.buildAdjacencyLists();
     var sorted = [];
     var n;
 
@@ -123,4 +137,37 @@ TypeCompiler.sortPipeline = function () {
         visit(n);
     }
     this.pipeline = sorted;
+};
+
+TypeCompiler.injectTypeFunctions = function(target) {
+    target.prototype.defineClass = function(className, buildFunction) {
+        if(typeof className !== 'string') throw new Error('first parameter must be string');
+        if(typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
+        var split = className.split(':');
+        if(split.length > 2) throw new Error("Invalid type declaration");
+
+        className = split[0] && split[0].trim();
+        var baseClassName = split[1] && split[1].trim();
+        var baseClassNamespace = null;
+
+        if(baseClassName) {
+            var splitBaseClass = baseClassName.split('.');
+            if(splitBaseClass.length === 1) {
+                //no namespace given, use this one.
+                //todo make sure its here
+                if(this[baseClassName]) {
+                    baseClassNamespace = this;
+                } else {
+                    throw new Error("The type `" + baseClassName + "` was found on namespace: " + this.getPath());
+                }
+            } else {
+                baseClassNamespace = window;
+                for(var i = 0, il = splitBaseClass.length - 1; i < il; i++) {
+                    //todo error check
+                    baseClassNamespace = baseClassNamespace[splitBaseClass[i]];
+                }
+            }
+        }
+        TypeCompiler.defineClass(this, className, baseClassNamespace, baseClassName, buildFunction);
+    };
 };

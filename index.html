@@ -9,21 +9,79 @@
 <div id="qunit-fixture"></div>
 <script src="lib/qunit-1.14.0.js"></script>
 
-<!-- Basic Strap Code -->
-<script src="strap/strap.js"></script>
-
 <!-- Compiler --->
 <script src="strap/type_data.js"></script>
 <script src="strap/type_compiler.js"></script>
-<script src="strap/compiler.js"></script>
+
+<!-- Basic Strap Code -->
+<script src="strap/strap.js"></script>
 
 <!--- Pipeline Steps --->
-<script src="strap/pipeline_step.js"></script>
+<script src="strap/pipeline_steps/pipeline_step.js"></script>
+<script src="strap/pipeline_steps/static.js"></script>
+<script src="strap/pipeline_steps/constructor.js"></script>
+<script src="strap/pipeline_steps/parent.js"></script>
+<script src="strap/pipeline_steps/mixin.js"></script>
+<!--<script src="strap/pipeline_steps/before_and_after.js"></script>-->
+
+
 
 <!-- User Pipeline Steps --->
 
 <!-- User Classes --->
+<script>
+Strap.configure({
+    ignoreStrapNamespace: true
+});
 
+Strap.defineClass('Book', function() {
+
+});
+
+Strap.namespace('Math2');
+
+
+//TypeCompiler.defineClass(window, 'Book', null, null, function() {
+//    this.attr('title');
+//    this.attr('author');
+//
+//    this.before('test', function() {
+//        console.log('calling before test');
+//    });
+//
+//    this.before('test', function() {
+//        console.log('calling before test #2');
+//    });
+//
+//    this.before('other', function() {
+//        console.log('before other');
+//    });
+//
+//    this.after('test', function() {
+//        console.log('test was called');
+//    });
+//
+//    this.init(function(title, author){
+//        this.title = title;
+//        this.author = author;
+//    });
+//
+//   // this.fn('yup', function(){});
+//
+//    this.fn('test', function() {
+//        console.log('calling test');
+//    });
+//
+//    this.fn('other', function() {
+//        console.log('calling other');
+//    });
+//});
+
+//TypeCompiler.defineClass(window, 'GoodBook', window, 'Book', function(){
+//    this.attr('meow');
+//});
+
+</script>
 <!-- App Code --->
 
 </body>

@@ -1,13 +1,5 @@
 //Add an option to pre compile the pipeline only
-
-//With these bricks, I can build a city.
-//StrapInternals.TypeData
-//attr
-//fn
-//
-//StrapTypeConstructor.pipeline
-//    attr
-//    fn
+//todo name all functions so we don't get 'anonymous function' in logs
 
 /*
  * Extension Ideas

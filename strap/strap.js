@@ -4,17 +4,45 @@
 //class (not pipeline step) was hand written.
 
 window.Strap = null;
+
 (function() {
-    var Namespace = function(name) {
-        this.name = name;
+
+    var Namespace = function(parent, name) {
+        this._name = name;
+        this._typeAttachPoint = this;
+        if(parent) {
+            this._path = parent._path + '.' + this._name;
+        } else {
+            this._path = this._name;
+        }
     };
 
     Namespace.prototype.namespace = function(subspace) {
-        if(!this[subspace]) {
-            this[subspace] = new Namespace(subspace);
+        if(!this._typeAttachPoint[subspace]) {
+            this._typeAttachPoint[subspace] = new Namespace(this, subspace);
         }
-        return this[subspace];
+        return this._typeAttachPoint[subspace];
     };
-    Strap = new Namespace('Strap');
+
+    Namespace.prototype.getPath = function() {
+        return this._path;
+    };
+
+    Namespace.prototype.defineClass = function(className, buildFunction) {
+        throw new Error("You must include TypeCompiler in order to define classes.");
+    };
+
+    if(TypeCompiler) {
+        TypeCompiler.injectTypeFunctions(Namespace);
+    }
+    Strap = new Namespace(null, 'Strap');
+    Strap._typeAttachPoint = Strap;
+
+    __StrapInternals = new Namespace(null, '__StrapInternals');
+    Strap.configure = function(obj) {
+        if(obj && obj.ignoreStrapNamespace) {
+            this._typeAttachPoint = window;
+        }
+    };
 })();
 

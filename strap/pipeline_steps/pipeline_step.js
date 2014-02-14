@@ -23,29 +23,39 @@ var MergeBaseClassAttributes = {
     }
 };
 
-var CreateConstructorBody = {
-    name: 'CreateConstructorBody',
+var CompileConstructorBody = {
+    name: 'CompileConstructorBody',
     incomingEdges: ['MergeBaseClassAttributes'],
     outgoingEdges: ['CreateConstructorObject'],
     process: function (baseTypeData, extendingTypeData) {
         var compiledAttributes = [];
         var attrNames = extendingTypeData.attrNames;
         var attrValues = extendingTypeData.attrValues;
-        for (var i = 0, il = attrNames.length - 1; i < il; i++) {
+        for (var i = 0, il = attrNames.length; i < il; i++) {
             compiledAttributes.push('\tthis.', attrNames[i], ' = ', JSON.stringify((attrValues && attrValues[i]) || null), ';\n');
         }
-        compiledAttributes.push('\tthis.', attrNames[attrNames.length - 1], ' = ', JSON.stringify((attrValues && attrValues[attrValues.length - 1]) || null), ';');
-        extendingTypeData.constructorBody = compiledAttributes.join("");
+        extendingTypeData.compiledConstructorBody = compiledAttributes.join("") + (extendingTypeData.constructorBody || '');
     }
 };
 
 var CreateConstructorObject = {
     name: 'CreateConstructorObject',
-    incomingEdges: ['CreateConstructorBody'],
+    incomingEdges: ['CompileConstructorBody'],
     outgoingEdges: ['CreatePrototype'],
     process: function (baseTypeData, extendingTypeData) {
-        //todo inject constructor arguments
-        extendingTypeData.constructorObject = Function(extendingTypeData.constructorBody);
+        //eval might be `evil`, but it is the only solution I could find for this.
+        //Kindly let me know if you come up with a better solution.
+        var str = "";
+        if (extendingTypeData.constructorArguments && typeof extendingTypeData.constructorArguments === 'string') {
+            var args = extendingTypeData.constructorArguments.split(',');
+            if (args[0] !== '') {
+                for (var i = 0, il = args.length; i < il; i++) {
+                    str += '\'' + args[i] + '\', ';
+                }
+            }
+        }
+        var functionStr = "Function(" + str + "extendingTypeData.compiledConstructorBody)";
+        extendingTypeData.constructorObject = eval(functionStr);
     }
 };
 
@@ -54,7 +64,7 @@ var CreatePrototype = {
     incomingEdges: ['CreateConstructorObject'],
     outgoingEdges: ['AppendFunctions'],
     process: function (baseTypeData, extendingTypeData) {
-        extendingTypeData.proto = (baseTypeData && Object.create(baseTypeData.proto)) || {};
+        extendingTypeData.proto = (baseTypeData && baseTypeData.proto && Object.create(baseTypeData.proto)) || null;
     }
 };
 
@@ -63,13 +73,17 @@ var AppendFunctions = {
     incomingEdges: ['CreatePrototype'],
     outgoingEdges: ['AttachPrototype'],
     process: function (baseTypeData, extendingTypeData) {
-        if (extendingTypeData.proto) {
-            var methodNames = extendingTypeData.methodNames;
-            var methodBodies = extendingTypeData.methodBodies;
-            for (var i = 0, il = methodNames.length; i < il; i++) {
-                extendingTypeData.proto[methodNames[i]] = methodBodies[i];
-            }
+
+        //if (extendingTypeData.proto) {
+        var methodNames = extendingTypeData.methodNames;
+        var methodBodies = extendingTypeData.methodBodies;
+        if (methodNames.length !== 0 && !extendingTypeData.proto) {
+            extendingTypeData.proto = {};
         }
+        for (var i = 0, il = methodNames.length; i < il; i++) {
+            extendingTypeData.proto[methodNames[i]] = methodBodies[i];
+        }
+        //  }
     }
 };
 
@@ -83,57 +97,49 @@ var AttachPrototype = {
 };
 
 
-TypeCompiler.addPipelineStep(CreateConstructorBody);
+TypeCompiler.addPipelineStep(CompileConstructorBody);
 TypeCompiler.addPipelineStep(CreateConstructorObject);
 TypeCompiler.addPipelineStep(AppendFunctions);
 TypeCompiler.addPipelineStep(AttachPrototype);
 TypeCompiler.addPipelineStep(MergeBaseClassAttributes);
 TypeCompiler.addPipelineStep(CreatePrototype);
 
-
-TypeCompiler.defineClass(window, 'PipelineStep', null, null, function () {
+__StrapInternals.defineClass('PipelineStep', function () {
     this.attr('processFunction');
     this.attr('incomingEdges', []);
     this.attr('outgoingEdges', []);
+    this.attr('helpers', {}); //I dont like how this is handled
     this.attr('mark', false);
     this.attr('tempMark', false);
     this.attr('name');
+
+    this.fn('requires', function(pipelineStepName) {
+        //todo implement this
+    });
 
     this.fn('pipelineStep', function (fn) {
         this.process = fn;
     });
 
-    this.fn('executeAfter', function (afterStepName) {
-        this.incomingEdges.push(TypeCompiler.pipelineSteps[afterStepName]);
+    this.fn('executeAfter', function () {
+        for (var i = 0, il = arguments.length; i < il; i++) {
+            if (typeof arguments[i] === 'string') {
+                this.incomingEdges.push(arguments[i]);
+            }
+        }
     });
 
-    this.fn('executeBefore', function (beforeStepName) {
-        this.outgoingEdges.push(TypeCompiler.pipelineSteps[beforeStepName]);
+    this.fn('executeBefore', function () {
+        for (var i = 0, il = arguments.length; i < il; i++) {
+            if (typeof arguments[i] === 'string') {
+                this.outgoingEdges.push(arguments[i]);
+            }
+        }
+    });
+
+    this.fn('helper', function (fnName, fnBody) {
+        this.helpers[fnName] = fnBody;          //I dont like how this is handled
     });
 });
 
-//TypeCompiler.defineExtension('Static', function () {
-//
-//    this.attr('statics', {});
-//    this.fn('static', function(prop, val) {
-//        this.statics[prop] = val;
-//    });
-//
-//}, function () {
-//    this.executeAfter('CreateConstructorObject');
-//    this.executeBefore('CreatePrototype');
-//
-//    this.pipelineStep(function (baseTypeData, extendingTypeData) {
-//        var statics = extendingTypeData.statics;
-//        for(var key in statics) {
-//            if(statics.hasOwnProperty(key)){
-//                extendingTypeData.constructorObject[key] = statics[key];
-//            }
-//        }
-//    });
-//});
 
-//TypeCompiler.defineClass(window, 'Book', null, null, function() {
-//    this.attr('mmk');
-//    this.static('somethingStatic', 'FUCKING WORKS!');
-//});
