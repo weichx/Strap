@@ -74,7 +74,6 @@ var AppendFunctions = {
     outgoingEdges: ['AttachPrototype'],
     process: function (baseTypeData, extendingTypeData) {
 
-        //if (extendingTypeData.proto) {
         var methodNames = extendingTypeData.methodNames;
         var methodBodies = extendingTypeData.methodBodies;
         if (methodNames.length !== 0 && !extendingTypeData.proto) {
@@ -83,7 +82,6 @@ var AppendFunctions = {
         for (var i = 0, il = methodNames.length; i < il; i++) {
             extendingTypeData.proto[methodNames[i]] = methodBodies[i];
         }
-        //  }
     }
 };
 
@@ -115,6 +113,10 @@ __StrapInternals.defineClass('PipelineStep', function () {
 
     this.fn('requires', function(pipelineStepName) {
         //todo implement this
+    });
+
+    this.fn('conflict', function(pipelineStepName){
+       //todo implement
     });
 
     this.fn('pipelineStep', function (fn) {

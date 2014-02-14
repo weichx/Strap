@@ -2,8 +2,8 @@
 //todo name all functions so we don't get 'anonymous function' in logs
 //todo require all extentions to declare what they do and which TypeData variables they manipulate.
 //todo require all extensions to show which attrs and functions are added to TypeData(can this be inferred?)
-//todo do not allow whitespace in attribute or function names -- causes vm crashes due to the way we are constructing functions
-//todo catch calls to parent where there is no parent
+//todo do not allow whitespace in attribute or function names -- causes vm crashes due to the way we are constructing functions -- call trim?
+//todo test that before/after only moves functions around when calling on base class fron super class
 /*
  * Extension Ideas
  *   before / after hooks

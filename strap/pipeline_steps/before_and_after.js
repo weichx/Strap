@@ -26,6 +26,9 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         var methodNames = typeData.methodNames;
         var methodBodies = typeData.methodBodies;
 
+        //locates a method in the prototype chain, if found on a lower link (prototype),
+        //brings the method up to the top level chain. This is nessessary for proper
+        //handling of before/after when called on a baseclass function.
         var findMethod = function(methodName, typeDataToSearch, depth) {
             var methodNames = typeDataToSearch.methodNames;
             var methodBodies = typeDataToSearch.methodBodies;

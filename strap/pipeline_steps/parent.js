@@ -8,7 +8,13 @@ TypeCompiler.defineExtension('Parent', null, function () {
         });
 
         this.helper('parentFunction', function () {
-            return Object.getPrototypeOf(Object.getPrototypeOf(this));
+            var parent = Object.getPrototypeOf(Object.getPrototypeOf(this));
+            if(parent) {
+                return parent;
+            } else {
+                throw new Error("Unable to call `parent` because this object does not have a parent");
+            }
+
         });
     }
 );
