@@ -124,4 +124,3 @@ TypeCompiler.sortPipeline = function () {
     }
     this.pipeline = sorted;
 };
-
