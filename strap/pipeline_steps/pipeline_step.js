@@ -65,11 +65,13 @@ var CreatePrototype = {
     outgoingEdges: ['AppendFunctions'],
     process: function (baseTypeData, extendingTypeData) {
         extendingTypeData.proto = (baseTypeData && baseTypeData.proto && Object.create(baseTypeData.proto)) || null;
+        //actual prototype is used for appending top level methods so we dont have duplicated garbage on sub prototypes
+        extendingTypeData.actualPrototype = (baseTypeData && baseTypeData.proto && Object.create(baseTypeData.proto)) || null;
     }
 };
 
 var AppendFunctions = {
-    name: 'AppendFunctions',
+    name: 'AppendPrototypeFunctions',
     incomingEdges: ['CreatePrototype'],
     outgoingEdges: ['AttachPrototype'],
     process: function (baseTypeData, extendingTypeData) {
@@ -78,9 +80,11 @@ var AppendFunctions = {
         var methodBodies = extendingTypeData.methodBodies;
         if (methodNames.length !== 0 && !extendingTypeData.proto) {
             extendingTypeData.proto = {};
+            extendingTypeData.actualPrototype = {};
         }
         for (var i = 0, il = methodNames.length; i < il; i++) {
             extendingTypeData.proto[methodNames[i]] = methodBodies[i];
+            extendingTypeData.actualPrototype[methodNames[i]] = methodBodies[i];
         }
     }
 };
@@ -90,10 +94,9 @@ var AttachPrototype = {
     incomingEdges: ['AppendFunctions'],
     outgoingEdges: [],
     process: function (baseTypeData, extendingTypeData) {
-        extendingTypeData.constructorObject.prototype = extendingTypeData.proto;
+        extendingTypeData.constructorObject.prototype = extendingTypeData.actualPrototype;
     }
 };
-
 
 TypeCompiler.addPipelineStep(CompileConstructorBody);
 TypeCompiler.addPipelineStep(CreateConstructorObject);

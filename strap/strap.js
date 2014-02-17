@@ -39,6 +39,12 @@ window.Strap = null;
     Strap._typeAttachPoint = Strap;
 
     __StrapInternals = new Namespace(null, '__StrapInternals');
+
+    //options:
+    //ignoreStrapNamespace => objects are created on window instead of Strap
+    //declutter => non user functions are pushed onto the Type and invoked with call. slightly less efficient
+    //aggressiveInline => where possible, inline function calls. depending on the code being run this may mess with
+                         //input variables and cause naming conflicts. no effort will be made to fix this.
     Strap.configure = function(obj) {
         if(obj && obj.ignoreStrapNamespace) {
             this._typeAttachPoint = window;

@@ -23,10 +23,12 @@
 <script src="strap/pipeline_steps/parent.js"></script>
 <script src="strap/pipeline_steps/mixin.js"></script>
 <script src="strap/pipeline_steps/before_and_after.js"></script>
+<script src="strap/pipeline_steps/getter_setter.js"></script>
 
 <!-- User Pipeline Steps --->
 
 <!-- User Classes --->
+<script src="test/strap_test.js"></script>
 
 <script>
 
@@ -37,6 +39,12 @@ Strap.configure({
 Strap.defineClass('Book', function() {
     this.attr('title');
     this.attr('author');
+
+    this.beforeSet('title', 'test');
+
+    this.afterSet('title', function() {
+        alert('set!');
+    });
 
     this.before('test', function() {
         console.log('calling before test');

@@ -21,7 +21,6 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
     this.executeAfter('CreateConstructorObject');
     this.executeBefore('AppendFunctions');
 
-    //todo support string syntax for before / after in addition to function literal
     this.pipelineStep(function beforeAndAfterPipelineStep(baseTypeData, typeData) {
         var methodNames = typeData.methodNames;
         var methodBodies = typeData.methodBodies;
@@ -44,8 +43,7 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
             if(typeDataToSearch.baseTypeData) {
                 return findMethod(methodName, typeDataToSearch.baseTypeData, ++depth);
             } else {
-                //todo error message needs to include namespace
-                throw new Error("Unable to find method `" + methodName + "` on type " + typeData.typeName + " or any of its base classes");
+                throw new Error("Unable to find method `" + methodName + "` on type " + typeData.fullPath + " or any of its base classes");
             }
         };
         //attach some properties to the type's constructor object.
@@ -109,10 +107,10 @@ TypeCompiler.defineExtension('BeforeAndAfterHooks', function () {
         //the after functions. The final call body would like this for a type like Strap.Book
         //and a method like read.
         //function(arg0, arg1) {
-        //  Strap.Book.__befores[0].call(this, arg0, arg1);
+        //  Strap.Book.__befores.read[0].call(this, arg0, arg1);
         //  var retn = Strap.Book.__actuals.read(arg0, arg1);
-        //  Strap.Book.__afters[0].call(this, arg0, arg1);
-        //  Strap.Book.__afters[1].call(this, arg0, arg1);
+        //  Strap.Book.__afters.read[0].call(this, arg0, arg1);
+        //  Strap.Book.__afters.read[1].call(this, arg0, arg1);
         //  return retn;
         //}
         //Note that all functions that have a hand in either before or after
