@@ -36,7 +36,11 @@ Strap.configure({
     //ignoreStrapNamespace: true
 });
 
-Strap.defineClass('Book', function() {
+Strap.defineMixin('Observable', function() {
+    this.attr('MIXY', 'so sexy');
+});
+
+Strap.defineClass('Book', ['Observable'], function() {
     this.attr('title');
     this.attr('author');
 
@@ -94,6 +98,7 @@ Strap.defineClass('BetterBook : Book', function() {
         console.log('SUPER');
     })
 });
+
 
 //TypeCompiler.defineClass(window, 'GoodBook', window, 'Book', function(){
 //    this.attr('meow');

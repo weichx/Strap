@@ -20,6 +20,10 @@ var MergeBaseClassAttributes = {
         }
         extendingTypeData.attrNames = finalNames;
         extendingTypeData.attrValues = finalValues;
+    },
+
+    processMixin: function(mixin, typeData) {
+        this.process(mixin, typeData);
     }
 };
 

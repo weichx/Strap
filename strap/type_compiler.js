@@ -5,42 +5,64 @@ TypeCompiler = {
     pipelineNeedsRebuilding: false
 };
 
-TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamespace, baseClassName, buildFunction) {
-    //if typeData is dirty, rebuild it?
+TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamespace, baseClassName, mixins, buildFunction) {
     var typeData = new TypeData(className);
     typeData.baseTypeData = (
         baseClassNamespace &&
-        baseClassNamespace[baseClassName] &&
-        baseClassNamespace[baseClassName].typeData
-    );
+            baseClassNamespace[baseClassName] &&
+            baseClassNamespace[baseClassName].typeData
+        );
     typeData.fullPath = namespaceObject.getPath() + '.' + className;
     buildFunction.call(typeData);
-    namespaceObject._typeAttachPoint[className] = this.buildClass(typeData);
+    var mixinTypeDataArray = [];
+    for (var i = 0, il = mixins.length; i < il; i++) {
+        var mixinName = mixins[i];
+        if (this.mixins[mixinName]) {
+            mixinTypeDataArray.push(this.mixins[mixinName]);
+        }
+    }
+    namespaceObject._typeAttachPoint[className] = this.buildClass(typeData, mixinTypeDataArray);
     namespaceObject._typeAttachPoint[className].typeData = typeData;
 };
 
-TypeCompiler.defineMixin = function(mixinName, mixinBaseType, mixinMixins, buildFunction) {
-    //remove any mixins from mixinMixins that are mixed into the mixin's base class
-    //for each mixin mixed into mixin
-        //mixin[i] = this.buildMixin(mixin[i], mixin[i + 1]);
-    //
+//for the moment, mixins cannot mixin other mixins or extend base classes.
+//when I get around to this, I can use topological sort to sift through dependencies
+TypeCompiler.defineMixin = function (mixinName, buildFunction) {
+    if (this.mixins[mixinName]) {
+        throw new Error("Mixin `" + mixinName + "` already exists!");
+    }
+    var typeData = new TypeData('Mixin:' + mixinName);
+    typeData.fullPath = mixinName;
+    buildFunction.call(typeData);
+    this.mixins[mixinName] = typeData;
 };
 
 TypeCompiler.buildClass = function (typeData, mixins) {
-    for (var i = 0, il = this.pipeline.length; i < il; i++) {
+    mixins = mixins || [];
+    typeData.mixins = this.computeMixinsForType(typeData, mixins);
+    for (var i = 0, il = mixins.length; i < il; i++) {
+        for (var j = 0, jl = this.pipeline.length; j < jl; j++) {
+            this.pipeline[j].processMixin && this.pipeline[j].processMixin(mixins[i], typeData);
+        }
+    }
+    for (i = 0, il = this.pipeline.length; i < il; i++) {
         this.pipeline[i].process(typeData.baseTypeData, typeData);
     }
+
     typeData.compiledType = typeData.constructorObject;
     return typeData.compiledType;
 };
 
-TypeCompiler.buildMixin = function(mixin1, mixin2) {
-    for(var i = 0, il = this.pipeline.length; i < il; i++){
-        if(this.pipeline[i].processMixin) {
-            this.pipeline[i].processMixin(mixin1, mixin2);
-        }
+//todo this needs work
+TypeCompiler.computeMixinsForType = function (typeData, mixins) {
+    if(typeData.baseTypeData) {
+        var retn = [];
+        //compare mixins to base class mixins
+        //take all mixins ! in base class, add to retn []
+        return retn;
+    } else {
+        return mixins;
     }
-    return mixin1;
 };
 
 TypeCompiler.defineExtension = function (extensionName, typeDataFunction, pipelineFunction) {
@@ -65,8 +87,8 @@ TypeCompiler.addPipelineStep = function (pipelineStep) {
     this.sortPipeline();
 };
 
-TypeCompiler.showPipelineSteps = function() {
-    for(var i = 0, il = this.pipeline.length; i < il; i++){
+TypeCompiler.showPipelineSteps = function () {
+    for (var i = 0, il = this.pipeline.length; i < il; i++) {
         console.log(this.pipeline[i].name);
     }
 };
@@ -102,7 +124,7 @@ TypeCompiler.buildAdjacencyLists = function () {
         for (j = 0, jl = node.outgoingEdges.length; j < jl; j++) {
             name = node.outgoingEdges[j];
             step = this.pipelineSteps[name];
-            if(step) {
+            if (step) {
                 if (!hasEdge(node.adjList, name)) {
                     node.adjList.push(name);
                 }
@@ -125,23 +147,23 @@ TypeCompiler.sortPipeline = function () {
         node.tempMark = false;
     }
 
-    var getUnmarkedNode = function(nodes) {
-        for(var i = 0, il = nodes.length; i < il; i++){
-            if(nodes[i].mark === false) {
+    var getUnmarkedNode = function (nodes) {
+        for (var i = 0, il = nodes.length; i < il; i++) {
+            if (nodes[i].mark === false) {
                 return nodes[i];
             }
         }
         return null;
     };
 
-    var visit = function(node) {
-        if(node.tempMark) {
+    var visit = function (node) {
+        if (node.tempMark) {
             throw new Error("Cycle found in the pipeline, ensure your declared build pipeline" +
                 " extensions do not contain a cycle");
         }
-        if(node.mark === false) {
+        if (node.mark === false) {
             node.tempMark = true;
-            for(var k = 0, kl = node.adjList.length; k < kl; k++) {
+            for (var k = 0, kl = node.adjList.length; k < kl; k++) {
                 visit(TypeCompiler.pipelineSteps[node.adjList[k]]);
             }
             node.mark = true;
@@ -150,54 +172,58 @@ TypeCompiler.sortPipeline = function () {
         }
     };
 
-    while( n = getUnmarkedNode(this.pipeline)) {
+    while (n = getUnmarkedNode(this.pipeline)) {
         visit(n);
     }
     this.pipeline = sorted;
 };
 
-TypeCompiler.injectTypeFunctions = function(target) {
-    target.prototype.defineClass = function(className, buildFunction) {
-        if(typeof className !== 'string') throw new Error('first parameter must be string');
-        if(typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
+TypeCompiler.injectTypeFunctions = function (target) {
+    target.prototype.defineClass = function (className, mixins, buildFunction) {
+        if (mixins !== undefined && buildFunction === undefined) {
+            buildFunction = mixins;
+        }
+        //todo check that mixins is a string or array (if string convert to array)
+        if (typeof className !== 'string') throw new Error('first parameter must be string');
+        if (typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
         var split = className.split(':');
-        if(split.length > 2) throw new Error("Invalid type declaration");
+        if (split.length > 2) throw new Error("Invalid type declaration");
 
         className = split[0] && split[0].trim();
         var baseClassName = split[1] && split[1].trim();
         var baseClassNamespace = null;
 
-        if(baseClassName) {
+        if (baseClassName) {
             var splitBaseClass = baseClassName.split('.');
-            if(splitBaseClass.length === 1) {
+            if (splitBaseClass.length === 1) {
                 //no namespace given, use this one.
                 //todo make sure its here
-                if(this[baseClassName]) {
+                if (this[baseClassName]) {
                     baseClassNamespace = this;
                 } else {
                     throw new Error("The type `" + baseClassName + "` was found on namespace: " + this.getPath());
                 }
             } else {
                 baseClassNamespace = window;
-                for(var i = 0, il = splitBaseClass.length - 1; i < il; i++) {
+                for (var i = 0, il = splitBaseClass.length - 1; i < il; i++) {
                     //todo error check
                     baseClassNamespace = baseClassNamespace[splitBaseClass[i]];
                 }
             }
         }
-        TypeCompiler.defineClass(this, className, baseClassNamespace, baseClassName, buildFunction);
+        TypeCompiler.defineClass(this, className, baseClassNamespace, baseClassName, mixins, buildFunction);
     };
 
-    target.prototype.defineMixin = function(mixinName, buildFunction) {
-        if(typeof mixinName !== 'string') throw new Error('first parameter must be string');
-        if(typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
-        var split = mixinName.split(':');
-        if(split.length > 2) throw new Error("Invalid type declaration");
-
-        mixinName = split[0] && split[0].trim();
-        var mixinBaseName = split[1] && split[1].trim();
-
-
-        TypeCompiler.defineMixin(mixinName, mixinBaseName, buildFunction);
+    target.prototype.defineMixin = function (mixinName, buildFunction) {
+//        if (typeof mixinName !== 'string') throw new Error('first parameter must be string');
+//        if (typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
+//        var split = mixinName.split(':');
+//        if (split.length > 2) throw new Error("Invalid type declaration");
+//
+//        mixinName = split[0] && split[0].trim();
+//        var mixinBaseName = split[1] && split[1].trim();
+        //todo have mixins able to extend each other and mixin other mixins?
+        mixinName = mixinName.trim();
+        TypeCompiler.defineMixin(mixinName, buildFunction);
     };
 };

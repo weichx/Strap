@@ -12,6 +12,7 @@ TypeData = function (typeName) {
     this.attrValues = [];
     this.methodNames = [];
     this.methodBodies = [];
+    this.mixins = [];
 };
 
 TypeData.prototype.attr = function(attrName, attrValue) {
