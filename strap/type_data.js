@@ -5,6 +5,7 @@ TypeData = function (typeName) {
     this.constructorObject = null;
     this.compiledConstructorBody = null;
     this.proto = null;
+    this.actualPrototype = null;
     this.compiledType = null;
     this.baseTypeData = null;
     this.attrNames = [];
@@ -26,7 +27,6 @@ TypeData.prototype.fn = function(fnName, fnBody) {
     this.methodNames.push(fnName);
     this.methodBodies.push(fnBody);
 };
-
 
 TypeDataMetaData = {
     attrNames: [],

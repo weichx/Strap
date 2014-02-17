@@ -1,5 +1,7 @@
 TypeCompiler.defineExtension('Parent', null, function () {
+        this.applyToMixins(true);
         this.executeBefore('AppendFunctions');
+
         this.pipelineStep(function (baseClassTypeData, extendingTypeData) {
             if(baseClassTypeData) {
                 extendingTypeData.methodNames.push('parent');

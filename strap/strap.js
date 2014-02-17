@@ -1,4 +1,4 @@
-//Strap is just a namespace, if StrapCompiler is included, then strap is injected with more methods,
+//Strap is just a namespace, if TypeCompiler is included, then Strap is injected with more methods,
 //ie defining classes / pipeline steps. If the compiler is not included, it is expected that all
 //necessary types are either injected into the js environment or code is output as though each
 //class (not pipeline step) was hand written.
@@ -49,6 +49,7 @@ window.Strap = null;
         if(obj && obj.ignoreStrapNamespace) {
             this._typeAttachPoint = window;
         }
+        //compile step here?
     };
 })();
 

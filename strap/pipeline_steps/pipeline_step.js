@@ -113,6 +113,7 @@ __StrapInternals.defineClass('PipelineStep', function () {
     this.attr('mark', false);
     this.attr('tempMark', false);
     this.attr('name');
+    this.attr('appliesToMixins', false);
 
     this.fn('requires', function(pipelineStepName) {
         //todo implement this
@@ -140,6 +141,10 @@ __StrapInternals.defineClass('PipelineStep', function () {
                 this.outgoingEdges.push(arguments[i]);
             }
         }
+    });
+
+    this.fn('applyToMixins', function(bool) {
+        this.appliesToMixins = bool;
     });
 
     this.fn('helper', function (fnName, fnBody) {

@@ -1,6 +1,7 @@
 TypeCompiler = {
     pipeline: [],
     pipelineSteps: {},
+    mixins: {},
     pipelineNeedsRebuilding: false
 };
 
@@ -18,12 +19,28 @@ TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamesp
     namespaceObject._typeAttachPoint[className].typeData = typeData;
 };
 
-TypeCompiler.buildClass = function (typeData) {
+TypeCompiler.defineMixin = function(mixinName, mixinBaseType, mixinMixins, buildFunction) {
+    //remove any mixins from mixinMixins that are mixed into the mixin's base class
+    //for each mixin mixed into mixin
+        //mixin[i] = this.buildMixin(mixin[i], mixin[i + 1]);
+    //
+};
+
+TypeCompiler.buildClass = function (typeData, mixins) {
     for (var i = 0, il = this.pipeline.length; i < il; i++) {
         this.pipeline[i].process(typeData.baseTypeData, typeData);
     }
     typeData.compiledType = typeData.constructorObject;
     return typeData.compiledType;
+};
+
+TypeCompiler.buildMixin = function(mixin1, mixin2) {
+    for(var i = 0, il = this.pipeline.length; i < il; i++){
+        if(this.pipeline[i].processMixin) {
+            this.pipeline[i].processMixin(mixin1, mixin2);
+        }
+    }
+    return mixin1;
 };
 
 TypeCompiler.defineExtension = function (extensionName, typeDataFunction, pipelineFunction) {
@@ -169,5 +186,18 @@ TypeCompiler.injectTypeFunctions = function(target) {
             }
         }
         TypeCompiler.defineClass(this, className, baseClassNamespace, baseClassName, buildFunction);
+    };
+
+    target.prototype.defineMixin = function(mixinName, buildFunction) {
+        if(typeof mixinName !== 'string') throw new Error('first parameter must be string');
+        if(typeof buildFunction !== 'function') throw new Error('second parameter must be a function');
+        var split = mixinName.split(':');
+        if(split.length > 2) throw new Error("Invalid type declaration");
+
+        mixinName = split[0] && split[0].trim();
+        var mixinBaseName = split[1] && split[1].trim();
+
+
+        TypeCompiler.defineMixin(mixinName, mixinBaseName, buildFunction);
     };
 };

@@ -121,7 +121,6 @@ TypeCompiler.defineExtension('GetSet', function () {
             typeData.actualPrototype.get = Function('property', 'return ' + typeData.fullPath + '.get(this, property);');
             typeData.actualPrototype.set = Function('property', 'value', typeData.fullPath + '.set(this, property, value);');
 
-
             var merge = function (base, extending) {
                 if (base) {
                     for (var key in base) {

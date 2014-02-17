@@ -7,14 +7,14 @@
 //todo when comipiling, remove all code between /*#debugStart*/ /*#debugEnd*/ statements
 /*
  * Extension Ideas
- *   before / after hooks
+ *   DONE before / after hooks
  *   before / after chain -> acts like a pipeline, each step in the chain receives the previous method's return value
- *   getter / setter
+ *   DONE getter / setter
  *   Object.defineProperty w/ getter / setter
  *   eventing
  *   logging
  *   debugger statement
- *   static
+ *   DONE static
  *   abstract
  *   interface -> might not be an extension
  *   debug mode
@@ -22,10 +22,11 @@
  *   computedProperty
  *   mixin
  *   flatten -> bring all sub prototype methods to top level prototype, destroys prototype chain (and base TypeData?)
- *   parent
+ *   DONE parent
  *   standardMethods -> adds a set of methods to the top level prototype
  *   reference -> reference to a Strap type, enables observing and type checking
  *   referenceList -> array of references, enables observing, type checking
+ *
  *   //model
  *   hasOne
  *   hasMany
