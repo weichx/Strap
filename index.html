@@ -9,21 +9,22 @@
 <div id="qunit-fixture"></div>
 <script src="lib/qunit-1.14.0.js"></script>
 
-<!-- Compiler --->
-<script src="strap/type_data.js"></script>
-<script src="strap/type_compiler.js"></script>
-
 <!-- Basic Strap Code -->
 <script src="strap/strap.js"></script>
 
-<!--- Pipeline Steps --->
-<script src="strap/pipeline_steps/pipeline_step.js"></script>
-<script src="strap/pipeline_steps/static.js"></script>
-<script src="strap/pipeline_steps/constructor.js"></script>
-<script src="strap/pipeline_steps/parent.js"></script>
-<script src="strap/pipeline_steps/mixin.js"></script>
-<script src="strap/pipeline_steps/before_and_after.js"></script>
-<script src="strap/pipeline_steps/getter_setter.js"></script>
+<!-- Compiler --->
+<script src="strap/topological_sorter.js"></script>
+<script src="strap/pipeline.js"></script>
+<script src="strap/type_data.js"></script>
+<script src="strap/type_generator.js"></script>
+
+<!--- Build Pipeline Defaults --->
+<script src="strap/build_pipeline/default_steps/merge_attributes.js"></script>
+<script src="strap/build_pipeline/default_steps/attach_prototype_functions.js"></script>
+<script src="strap/build_pipeline/default_steps/attach_prototype.js"></script>
+<script src="strap/build_pipeline/default_steps/create_constructor_body.js"></script>
+<script src="strap/build_pipeline/default_steps/create_constructor_function.js"></script>
+<script src="strap/build_pipeline/default_steps/create_prototype.js"></script>
 
 <!-- User Pipeline Steps --->
 
@@ -32,76 +33,73 @@
 
 <script>
 
-Strap.configure({
-    //ignoreStrapNamespace: true
-});
+    Strap.initialize();
 
-Strap.defineMixin('Observable', function() {
-    this.attr('MIXY', 'so sexy');
-});
-
-Strap.defineClass('Book', ['Observable'], function() {
-    this.attr('title');
-    this.attr('author');
-
-    this.beforeSet('title', 'test');
-
-    this.afterSet('title', function() {
-        alert('set!');
-    });
-
-    this.before('test', function() {
-        console.log('calling before test');
-    });
-
-    this.before('test', function(arg0, arg1) {
-        console.log('calling before test #2', arg0, arg1);
-    });
-
-    this.before('other', function() {
-        console.log('before other');
-    });
-
-    this.after('test', function() {
-        console.log('test was called');
-    });
-
-    this.init(function(title, author){
-        this.title = title;
-        this.author = author;
-    });
-
-    this.fn('test', function(arg0, arg1) {
-        console.log('calling test', arg0, arg1);
-    });
-
-    this.fn('other', function() {
-        console.log('calling other');
-    });
-
-    this.after('test', 'other');
-});
-
-Strap.defineClass('GoodBook : Book', function() {
-   this.attr('someAttr');
-});
-
-Strap.defineClass('BetterBook : Book', function() {
-    this.attr('some_other');
-    this.fn('super_before', function(){
-        console.log("SUPER");
-    });
-    this.before('test', function() {
-        console.log('SUPER');
-    });
-    this.after('test', function() {
-        console.log('SUPER');
-    })
-});
-
-
-//TypeCompiler.defineClass(window, 'GoodBook', window, 'Book', function(){
-//    this.attr('meow');
+//Strap.configure({
+//    //ignoreStrapNamespace: true
+//});
+//
+//Strap.defineMixin('Observable', function() {
+//    this.attr('MIXY', 'so sexy');
+//});
+//
+//Strap.defineClass('Book', ['Observable'], function() {
+//    this.attr('title');
+//    this.attr('author');
+//
+//    this.beforeSet('title', 'test');
+//
+//    this.afterSet('title', function() {
+//        alert('set!');
+//    });
+//
+//    this.before('test', function() {
+//        console.log('calling before test');
+//    });
+//
+//    this.before('test', function(arg0, arg1) {
+//        console.log('calling before test #2', arg0, arg1);
+//    });
+//
+//    this.before('other', function() {
+//        console.log('before other');
+//    });
+//
+//    this.after('test', function() {
+//        console.log('test was called');
+//    });
+//
+//    this.init(function(title, author){
+//        this.title = title;
+//        this.author = author;
+//    });
+//
+//    this.fn('test', function(arg0, arg1) {
+//        console.log('calling test', arg0, arg1);
+//    });
+//
+//    this.fn('other', function() {
+//        console.log('calling other');
+//    });
+//
+//    this.after('test', 'other');
+//});
+//
+//Strap.defineClass('GoodBook : Book', function() {
+//   this.attr('someAttr');
+//});
+//
+//Strap.defineClass('BetterBook : Book', function() {
+//    this.attr('some_other');
+//    this.fn('super_before', function(){
+//        console.log("SUPER");
+//    });
+//    this.before('test', function() {
+//        console.log('SUPER');
+//    });
+//    this.after('test', function() {
+//        console.log('SUPER');
+//    })
 //});
 
 </script>

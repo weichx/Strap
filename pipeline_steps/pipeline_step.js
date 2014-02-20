@@ -20,10 +20,6 @@ var MergeBaseClassAttributes = {
         }
         extendingTypeData.attrNames = finalNames;
         extendingTypeData.attrValues = finalValues;
-    },
-
-    processMixin: function(mixin, typeData) {
-        this.process(mixin, typeData);
     }
 };
 
@@ -117,7 +113,6 @@ __StrapInternals.defineClass('PipelineStep', function () {
     this.attr('mark', false);
     this.attr('tempMark', false);
     this.attr('name');
-    this.attr('appliesToMixins', false);
 
     this.fn('requires', function(pipelineStepName) {
         //todo implement this

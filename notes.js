@@ -46,3 +46,40 @@
 //    this.observe('players', 'property', 'whatToDo');
 //    this.observe('someReference', 'optional property', 'whatToDo');
 //});
+
+
+/*
+3 attachment locations
+    instance (this.x = 1)
+    prototype (this.method = fn)
+    constructor (Strap.MyType.blah = 'blah')
+
+output of build pipeline
+    {
+        instance variableName: [],
+        instance variableValue: [],
+        prototype variableName: [],
+        prototype variableValue: [],
+        constructor variableName: [],
+        constructor variableValue: []
+    }
+
+output of compile pipeline
+MyClass = function(constructor arguments) {
+    MyBaseClass.call(this, arguments);
+    //attribute declarations
+    //constructor body
+}
+
+//inherit prototype
+
+MyClass.prototype.somefn = function() {};
+
+ */
+
+defineClass('Stuff : BaseStuff', function() {
+
+    this.init('x', 'y', function(x, y) {
+
+    });
+});

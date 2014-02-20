@@ -1,55 +1,41 @@
-//Strap is just a namespace, if TypeCompiler is included, then Strap is injected with more methods,
-//ie defining classes / pipeline steps. If the compiler is not included, it is expected that all
-//necessary types are either injected into the js environment or code is output as though each
-//class (not pipeline step) was hand written.
+window.Strap = {};
 
-window.Strap = null;
+Strap.assert = function(condition, message) {
+    if(!condition) throw new Error(message);
+};
 
 (function() {
 
     var Namespace = function(parent, name) {
         this._name = name;
         this._typeAttachPoint = this;
-        if(parent) {
-            this._path = parent._path + '.' + this._name;
-        } else {
-            this._path = this._name;
-        }
+        this._path = '' + (parent && parent.__path) || '' + '.' + this._name;
     };
 
     Namespace.prototype.namespace = function(subspace) {
-        if(!this._typeAttachPoint[subspace]) {
-            this._typeAttachPoint[subspace] = new Namespace(this, subspace);
-        }
-        return this._typeAttachPoint[subspace];
+        return this._typeAttachPoint[subspace] || (this._typeAttachPoint = new Namespace(this, subspace));
     };
 
     Namespace.prototype.getPath = function() {
         return this._path;
     };
 
-    Namespace.prototype.defineClass = function(className, buildFunction) {
-        throw new Error("You must include TypeCompiler in order to define classes.");
+    Namespace.prototype.defineClass = function(className, mixins, buildFunction) {
+        Strap.assert(TypeGenerator, "You must include TypeCompiler in order to define classes.");
+
     };
 
-    if(TypeCompiler) {
-        TypeCompiler.injectTypeFunctions(Namespace);
-    }
-    Strap = new Namespace(null, 'Strap');
-    Strap._typeAttachPoint = Strap;
+    Namespace.call(Strap, null, 'Strap');
+    Strap.getPath = Namespace.prototype.getPath;
+    Strap.defineClass = Namespace.prototype.defineClass;
+    Strap.namespace = Namespace.prototype.namespace;
 
-    __StrapInternals = new Namespace(null, '__StrapInternals');
-
-    //options:
-    //ignoreStrapNamespace => objects are created on window instead of Strap
-    //declutter => non user functions are pushed onto the Type and invoked with call. slightly less efficient
-    //aggressiveInline => where possible, inline function calls. depending on the code being run this may mess with
-                         //input variables and cause naming conflicts. no effort will be made to fix this.
-    Strap.configure = function(obj) {
-        if(obj && obj.ignoreStrapNamespace) {
-            this._typeAttachPoint = window;
-        }
-        //compile step here?
-    };
 })();
 
+Strap.getPipeline = function(pipelineName) {
+    return TypeGenerator.getPipeline(pipelineName);
+};
+
+Strap.initialize = function() {
+    TypeGenerator.generate();
+};

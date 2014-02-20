@@ -1,8 +1,7 @@
 TypeCompiler = {
     pipeline: [],
     pipelineSteps: {},
-    mixins: {},
-    pipelineNeedsRebuilding: false
+    mixins: {}
 };
 
 TypeCompiler.defineClass = function (namespaceObject, className, baseClassNamespace, baseClassName, mixins, buildFunction) {
@@ -227,3 +226,9 @@ TypeCompiler.injectTypeFunctions = function (target) {
         TypeCompiler.defineMixin(mixinName, buildFunction);
     };
 };
+
+//var inheritPrototype = function(childObject, parentObject) {
+//    var copyOfParent = Object.create(parentObject.prototype);
+//    copyOfParent.constructor = childObject;
+//    childObject.prototype = copyOfParent;
+//};
