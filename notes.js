@@ -49,8 +49,9 @@
 
 
 /*
-3 attachment locations
+4 attachment locations
     instance (this.x = 1)
+    mixin (this.z = 1, this.something = function(){})
     prototype (this.method = fn)
     constructor (Strap.MyType.blah = 'blah')
 
@@ -58,6 +59,10 @@ output of build pipeline
     {
         instance variableName: [],
         instance variableValue: [],
+        mixin variableName: [],
+        mixin variableValue: [],
+        mixin methodName: [],
+        mixin methodValue: [],
         prototype variableName: [],
         prototype variableValue: [],
         constructor variableName: [],
@@ -65,21 +70,18 @@ output of build pipeline
     }
 
 output of compile pipeline
+
 MyClass = function(constructor arguments) {
-    MyBaseClass.call(this, arguments);
-    //attribute declarations
+    //mixin attributes
+    //attribute declarations: merged from base class?
+    //myMixin.attributes.call(this);
+    MyBaseClass.constructor.call(this, arguments);
     //constructor body
 }
 
 //inherit prototype
+//mixins -> myMixin.functions.call(MyClass.prototype)
 
 MyClass.prototype.somefn = function() {};
 
  */
-
-defineClass('Stuff : BaseStuff', function() {
-
-    this.init('x', 'y', function(x, y) {
-
-    });
-});

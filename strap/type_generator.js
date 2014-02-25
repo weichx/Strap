@@ -3,18 +3,22 @@ TypeGenerator = {
     types: [],
     pipelines: {
         build: new Pipeline('build'),
-        mixin: new Pipeline('mixin'),
         compile: new Pipeline('compile')
     }
 };
 
 TypeGenerator.generate = function () {
+    //sort pipeline
+    //sort types
+    //build build pipeline
+    //build compile pipeline
+    //build typeData -> likely needs eval
+    //build types
+
     var build = this.pipelines.build;
-    var mixin = this.pipelines.mixin;
     var compile = this.pipelines.compile;
     build.steps = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
-//    TopologicalSorter.sort(this.pipelines.mixin);
-//    TopologicalSorter.sort(this.pipelines.compile);
+    compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
 //    TopologicalSorter.sort(this.types);
 };
 
@@ -33,16 +37,8 @@ TypeGenerator.buildTypes = function () {
         var typeData = new TypeData(typeNode.fullPath);
         var baseTypeData = typeNode.baseClassPath && this.types[typeNode.baseClassPath];
         typeNode.buildFunction.call(typeData);
-        this.applyMixins(typeData, typeNode.mixins);
         this.buildClass(baseTypeData, typeData);
         this.generateCode(typeData);
-    }
-};
-
-TypeGenerator.applyMixins = function (baseTypeData, typeData) {
-    typeData.mixins = this.ensureUniqueMixins(baseTypeData, typeData);
-    for (var i = typeData.mixins.length - 1; i >= 0; i--) {
-        this.pipelines.mixin.run(typeData.mixins[i], typeData);
     }
 };
 
