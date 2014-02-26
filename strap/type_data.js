@@ -53,3 +53,11 @@ for(key in TypeData.prototype) {
 }
 
 //todo make a function to generate meta data, will have 1 meta data type per pipeline and then one for Type
+
+PrimitiveMeta = function() {
+    this.name = null;
+    this.attrNames = [];
+    this.attrValues = [];
+    this.methodNames = [];
+    this.methodBodies = [];
+};

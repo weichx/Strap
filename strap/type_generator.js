@@ -10,10 +10,13 @@ TypeGenerator.buildDefaultPipelines = function() {
     var build   = this.pipelines.build;
     var compile = this.pipelines.compile;
     build.steps   = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
-    compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
-    this.pipelines.build.run(null, TypeData);
-    this.pipelines.compile.run(null, TypeData);
-    TypeData = eval(TypeData.__compiledType);
+    //compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
+    var primitiveTypeData = new PrimitiveMeta();
+    console.log(build.steps);
+    this.pipelines.build.run(null, primitiveTypeData);
+    debugger;
+    //this.pipelines.compile.run(null, TypeDataMeta);
+   // TypeData = eval(TypeData.__compiledType);
 };
 
 TypeGenerator.generate = function () {

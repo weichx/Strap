@@ -38,7 +38,7 @@ Strap.getPipeline = function(pipelineName) {
 
 Strap.initialize = function() {
     TypeGenerator.buildDefaultPipelines();
-    TypeGenerator.generate();
+    //TypeGenerator.generate();
 };
 
 Strap.inheritPrototype = function(childObject, parentObject) {
