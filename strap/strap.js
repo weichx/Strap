@@ -9,7 +9,11 @@ Strap.assert = function(condition, message) {
     var Namespace = function(parent, name) {
         this._name = name;
         this._typeAttachPoint = this;
-        this._path = '' + (parent && parent.__path) || '' + '.' + this._name;
+        if(parent) {
+            this._path = parent._path + '.' + this._name;
+        } else {
+            this._path = this._name;
+        }
     };
 
     Namespace.prototype.namespace = function(subspace) {
@@ -37,11 +41,13 @@ Strap.getPipeline = function(pipelineName) {
 };
 
 Strap.initialize = function() {
-    TypeGenerator.buildDefaultPipelines();
-    TypeGenerator.generate();
+    TypeGenerator.buildPipelines();
+    //TypeGenerator.generate();
 };
 
 Strap.inheritPrototype = function(childObject, parentObject) {
+    //this adds an empty __proto__, setting childObject.proto = parentObject.proto fixes this
+    //but mighthave unwanted concquences. investigate
     var copyOfParent = Object.create(parentObject.prototype);
     copyOfParent.constructor = childObject;
     childObject.prototype = copyOfParent;
