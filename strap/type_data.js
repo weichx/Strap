@@ -51,3 +51,5 @@ for(key in TypeData.prototype) {
         TypeDataMetaData.methodBodies.push(TypeData.prototype[key]);
     }
 }
+
+//todo make a function to generate meta data, will have 1 meta data type per pipeline and then one for Type

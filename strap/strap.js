@@ -37,6 +37,7 @@ Strap.getPipeline = function(pipelineName) {
 };
 
 Strap.initialize = function() {
+    TypeGenerator.buildDefaultPipelines();
     TypeGenerator.generate();
 };
 

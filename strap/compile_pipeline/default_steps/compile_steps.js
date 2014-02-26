@@ -17,6 +17,7 @@ Strap.MyClass.prototype.someMethod = function(){};
 
 Strap.MyClass.someStatic = 5;
  */
+
 Strap.defineClass('CompileStep : PipelineStep', function() {
     this.fn('attachProperties', function(attachPoint, names, values) {
         Strap.assert(names.length && values.length, 'expected an array');
@@ -62,7 +63,6 @@ Strap.pipeline('compile').defineExtension('InvokeBaseConstructor', function() {
 
 Strap.pipeline('compile').defineExtension('CloseConstructor', function() {
     this.executeAfter('OpenConstructor');
-
     this.process(function(baseTypeData, typeData) {
         return '};\n';
     });

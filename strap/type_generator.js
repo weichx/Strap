@@ -1,5 +1,4 @@
 TypeGenerator = {
-    typeNodes: {},
     types: [],
     pipelines: {
         build: new Pipeline('build'),
@@ -7,19 +6,31 @@ TypeGenerator = {
     }
 };
 
-TypeGenerator.generate = function () {
-    //sort pipeline
-    //sort types
-    //build build pipeline
-    //build compile pipeline
-    //build typeData -> likely needs eval
-    //build types
-
-    var build = this.pipelines.build;
+TypeGenerator.buildDefaultPipelines = function() {
+    var build   = this.pipelines.build;
     var compile = this.pipelines.compile;
-    build.steps = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
+    build.steps   = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
     compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
-//    TopologicalSorter.sort(this.types);
+    this.pipelines.build.run(null, TypeData);
+    this.pipelines.compile.run(null, TypeData);
+    TypeData = eval(TypeData.__compiledType);
+};
+
+TypeGenerator.generate = function () {
+
+    var build   = this.pipelines.build;
+    var compile = this.pipelines.compile;
+    build.steps   = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
+    compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
+    this.types    = TopologicalSorter.sort(this.types, 'fullPath');
+
+    var compiledTypes = [];
+    for(var i = 0, il = this.types.length; i < il; i++) {
+        this.pipelines.build.run(this.types[i]);
+        this.pipelines.compile.run(this.types[i]);
+        compiledTypes.push(this.types[i]);
+    }
+    return compiledTypes;
 };
 
 TypeGenerator.getPipeline = function (pipelineName) {
@@ -28,7 +39,17 @@ TypeGenerator.getPipeline = function (pipelineName) {
 };
 
 TypeGenerator.defineClass = function (className, classNamespace, baseClassName, baseClassNamespace, mixins, buildFunction) {
+    this.types.push(className);
+};
 
+//this should call any extension functions per pipeline on the meta data object for that pipeline
+TypeGenerator.defineExtension = function(extensionName, extensionObject) {
+    if(extensionObject.buildData) {
+        extensionObject.buildData.call(buildDataMeta);
+    }
+    if(extensionObject.typeData) {
+        extensionObject.typeData.call(typeDataMeta);
+    }
 };
 
 TypeGenerator.buildTypes = function () {
@@ -40,14 +61,6 @@ TypeGenerator.buildTypes = function () {
         this.buildClass(baseTypeData, typeData);
         this.generateCode(typeData);
     }
-};
-
-TypeGenerator.buildClass = function (baseTypeData, typeData) {
-    this.pipelines.build.run(baseTypeData, typeData);
-};
-
-TypeGenerator.generateCode = function (baseTypeData, typeData) {
-    this.pipelines.compile.run(baseTypeData, typeData);
 };
 
 TypeGenerator.ensureUniqueMixins = function (baseTypeData, typeData) {
@@ -64,3 +77,5 @@ TypeGenerator.ensureUniqueMixins = function (baseTypeData, typeData) {
     }
     return typeData.mixins;
 };
+
+
