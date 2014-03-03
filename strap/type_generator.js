@@ -1,26 +1,28 @@
 TypeGenerator = {
     types: [],
+    uncompiledTypeData: new TypeData(Strap, 'TypeData'),
     pipelines: {
         build: new Pipeline('build'),
         compile: new Pipeline('compile')
     }
 };
 
-TypeGenerator.buildDefaultPipelines = function() {
+TypeGenerator.buildPipelines = function() {
+    //build all internal types, TypeData and 1 type per pipeline
     var build   = this.pipelines.build;
     var compile = this.pipelines.compile;
-    build.steps   = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
-    //compile.steps = TopologicalSorter.sort(compile.steps, 'name', 'incomingEdges', 'outgoingEdges');
-    var primitiveTypeData = new PrimitiveMeta();
-    console.log(build.steps);
-    this.pipelines.build.run(null, primitiveTypeData);
-    debugger;
-    //this.pipelines.compile.run(null, TypeDataMeta);
-   // TypeData = eval(TypeData.__compiledType);
+  //  build.sortSteps();
+    compile.sortSteps();
+
+   // build.run(null, build.typeMeta);
+    compile.run(null, primitive);
+    console.dir(primitive);
+    new Function(primitive.typeAsString)();
+
+   // compile.buildSteps();
 };
 
 TypeGenerator.generate = function () {
-
     var build   = this.pipelines.build;
     var compile = this.pipelines.compile;
     build.steps   = TopologicalSorter.sort(build.steps, 'name', 'incomingEdges', 'outgoingEdges');
@@ -47,11 +49,26 @@ TypeGenerator.defineClass = function (className, classNamespace, baseClassName, 
 
 //this should call any extension functions per pipeline on the meta data object for that pipeline
 TypeGenerator.defineExtension = function(extensionName, extensionObject) {
-    if(extensionObject.buildData) {
-        extensionObject.buildData.call(buildDataMeta);
-    }
     if(extensionObject.typeData) {
-        extensionObject.typeData.call(typeDataMeta);
+        extensionObject.typeData.call(this.uncompiledTypeData);
+    }
+    for(var key in this.pipelines) {
+        if(this.pipelines.hasOwnProperty(key)) {
+            if(extensionObject[key]) {
+                //queue for later if function
+                //todo handle validating these
+                if(Array.isArray(extensionObject[key])) {
+                    for(var i = 0, il = extensionObject[key].length; i < il; i++){
+                        this.pipelines[key].queueStep(extensionObject[key][i]);
+                    }
+                } else {
+                    this.pipelines[key].queueStep(extensionObject[key]);
+                }
+            }
+            if(extensionObject[key + 'Data']) {
+                extensionObject[key + 'Data'].call(primitive);//this.pipelines[key].typeMeta);
+            }
+        }
     }
 };
 

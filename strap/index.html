@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="../lib/qunit-1.14.0.css"/>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../lib/qunit-1.14.0.js"></script>
+
+<!-- Basic Strap Code -->
+<script src="strap.js"></script>
+
+<!-- Compiler --->
+<script src="topological_sorter.js"></script>
+<script src="pipeline.js"></script>
+<script src="type_data.js"></script>
+<script src="type_generator.js"></script>
+
+<!-- Compile pipeline defaults --->
+<script src="compile_pipeline/default_steps/required_steps.js"></script>
+<script src="compile_pipeline/default_steps/basic_steps.js"></script>
+<script src="compile_pipeline/default_steps/mixin_steps.js"></script>
+
+
+<!-- User Pipeline Steps --->
+
+<!-- User Classes --->
+<script src="../test/topological_sort_test.js"></script>
+
+<script>
+
+    Strap.defineClass('Vector3 : Vector2', function() {
+        this.attr('other', 'Other(z,x,y)');
+    });
+
+    Strap.defineClass('Vector1', function() {
+        this.attr('x',5);
+        this.fn('normalize', function() {
+            alert('was normalized');
+        });
+    });
+
+    Strap.defineClass('Vector2 : Vector1', function() {
+        this.attr('y', function() { return 3;});
+    });
+
+    Strap.initialize();
+</script>
+<!-- App Code --->
+
+</body>
+</html>

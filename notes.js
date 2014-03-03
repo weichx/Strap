@@ -55,6 +55,15 @@
     prototype (this.method = fn)
     constructor (Strap.MyType.blah = 'blah')
 
+build pipeline
+    attrs -> merge?
+    extract constructor arguments
+    extract base constructor arguments
+    filter mixins?
+
+
+
+
 output of build pipeline
     {
         instance variableName: [],
@@ -83,5 +92,7 @@ MyClass = function(constructor arguments) {
 //mixins -> myMixin.functions.call(MyClass.prototype)
 
 MyClass.prototype.somefn = function() {};
+
+----------------------
 
  */

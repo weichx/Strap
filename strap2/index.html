@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="../lib/qunit-1.14.0.css"/>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../lib/qunit-1.14.0.js"></script>
+
+<!-- Basic Strap Code -->
+<script src="strap.js"></script>
+
+<!-- Compiler --->
+<script src="topological_sorter.js"></script>
+<script src="type_data.js"></script>
+<script src="pipeline.js"></script>
+<script src="type_class.js"></script>
+<script src="type_generator.js"></script>
+
+<!-- Compile pipeline defaults --->
+<script src="pipeline_steps/extract_constructor_arguments.js"></script>
+<script src="pipeline_steps/extract_constructor_body.js"></script>
+<script src="pipeline_steps/inject_constructor_body.js"></script>
+<script src="pipelines/standard_build.js"></script>
+<script src="pipelines/standard_compile.js"></script>
+<script src="type_class_actions/define.js"></script>
+<script src="type_class_actions/extends.js"></script>
+<script src="type_class_actions/mixin.js"></script>
+<script src="type_classes/class.js"></script>
+
+<script src="../test/topological_sort_test.js"></script>
+<script>
+    Strap.buildInternals();
+
+    Strap.Class('Triangle').define(function () {
+        this.attr('vertices', []);
+        this.attrs('x', 'y', 'z');
+
+        this.fn('alert', function () {
+            alert('FUCKING WORKS!');
+        });
+
+        this.init(function(x, y, z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        });
+    });
+
+   Strap.initialize();
+</script>
+
+<!-- User Pipeline Steps --->
+
+<!-- User Classes --->
+
+<!-- App Code --->
+
+</body>
+</html>

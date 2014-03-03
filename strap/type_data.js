@@ -1,63 +1,64 @@
-TypeData = function (typeName) {
-    this.typeName = typeName;
-    this.constructorArguments = '';
-    this.constructorBody = null;
-    this.constructorObject = null;
-    this.compiledConstructorBody = null;
-    this.proto = null;
+PrimitiveMeta = function(namespace, name) {
+    this.name = name;
+    this.namespace = namespace;
+    this.fullPath = namespace.getPath() + '.' + name;
     this.attrNames = [];
     this.attrValues = [];
     this.methodNames = [];
     this.methodBodies = [];
-    this.mixins = [];
 };
 
-TypeData.prototype.attr = function(attrName, attrValue) {
-    //ensure not overwritting?
-    //ensure not function?
+PrimitiveMeta.prototype.attr = function(attrName, attrValue) {
     this.attrNames.push(attrName);
-    this.attrValues.push(attrValue);
+    this.attrValues.push(attrValue || null);
 };
 
-TypeData.prototype.fn = function(fnName, fnBody) {
-    //ensure fn?
-    //ensure not overwriting?
+PrimitiveMeta.prototype.fn = function(fnName, fnBody) {
     this.methodNames.push(fnName);
     this.methodBodies.push(fnBody);
 };
 
-TypeDataMetaData = {
-    attrNames: [],
-    attrValues: [],
-    methodNames: [],
-    methodBodies: [],
-    constructorArguments: '',
-    attr: TypeData.prototype.attr,
-    fn: TypeData.prototype.fn
+TypeData = function(namespace, name) {
+    PrimitiveMeta.call(this, namespace, name);
+    this.constructorArguments = null;
+    this.staticNames = [];
+    this.staticValues = [];
+    //consider removing these
+    this.mixins = [];
+    this.mixinNames = [];
+    this.mixinValues = [];
 };
 
-var t = new TypeData();
+Strap.inheritPrototype(TypeData, PrimitiveMeta);
 
-for(var key in t) {
-    if(t.hasOwnProperty(key)) {
-        TypeDataMetaData.attrNames.push(key);
-        TypeDataMetaData.attrValues.push(t[key]);
-    }
-}
+var step = function() {
+    this.attr('incomingEdges', []);
+    this.attr('outgoingEdges', []);
 
-for(key in TypeData.prototype) {
-    if(TypeData.prototype.hasOwnProperty(key)){
-        TypeDataMetaData.methodNames.push(key);
-        TypeDataMetaData.methodBodies.push(TypeData.prototype[key]);
-    }
-}
+    this.fn('process', function(fn) {
+        this.processFn = fn;
+    });
 
-//todo make a function to generate meta data, will have 1 meta data type per pipeline and then one for Type
+    this.fn('executeBefore', function() {
+        for (var i = 0, il = arguments.length; i < il; i++) {
+            if (typeof arguments[i] === 'string') {
+                this.outgoingEdges.push(arguments[i]);
+            }
+        }
+    });
 
-PrimitiveMeta = function() {
-    this.name = null;
-    this.attrNames = [];
-    this.attrValues = [];
-    this.methodNames = [];
-    this.methodBodies = [];
+    this.fn('executeAfter', function() {
+        for (var i = 0, il = arguments.length; i < il; i++) {
+            if (typeof arguments[i] === 'string') {
+                this.incomingEdges.push(arguments[i]);
+            }
+        }
+    });
+
+    this.fn('stepName', function(name) {
+        this.name = name;
+    });
 };
+
+var primitive = new PrimitiveMeta(Strap, 'PipelineStep');
+step.call(primitive);
